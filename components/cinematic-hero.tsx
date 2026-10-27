@@ -443,8 +443,11 @@ function PhoneScene() {
         }
       };
 
+      const mobilePhoneScale = 0.52;
+      const mobileScreenCompensation = 0.65 / mobilePhoneScale;
+
       if (mobile) {
-        // Keep the phone and its screens large through the first three projects.
+        // Let the project screens stand out around a smaller center phone.
         // Only make room below the device when Goddard's final entrance begins.
         timeline
           .to(".hero-copy", { opacity: 0, y: -24, duration: 0.12 }, 0.03)
@@ -456,7 +459,7 @@ function PhoneScene() {
           .to(display.position, { z: 0.55, duration: 0.25 }, 0.57)
           .to(phone.position, { x: 0, y: -0.05, duration: 0.4 }, 0.65)
           .to(phone.rotation, { x: 0.03, y: (reducedMotion ? 0 : Math.PI * 2) + 0.08, z: -0.025, duration: 0.4 }, 0.65)
-          .to(phone.scale, { x: 0.65, y: 0.65, z: 0.65, duration: 0.4 }, 0.65)
+          .to(phone.scale, { x: mobilePhoneScale, y: mobilePhoneScale, z: mobilePhoneScale, duration: 0.4 }, 0.65)
           .to(perspectiveCamera.position, { z: assemblyDistance, duration: 0.4 }, 0.65)
           .to(phone.position, { y: 0.65, duration: 0.28 }, 8.86)
           .to(phone.scale, { x: 0.42, y: 0.42, z: 0.42, duration: 0.28 }, 8.86)
@@ -488,8 +491,9 @@ function PhoneScene() {
         if (!panel || !material) return;
 
         const mobilePositions = [[-0.55, 1.85, 0.85], [0.55, 0.1, 0.85], [-0.6, -1.8, 0.85]];
-        const position = mobile ? mobilePositions[index] : feature.position;
-        const panelScale = mobile ? 0.5 : 1;
+        // Panels are children of the phone; preserve their visible size and spacing.
+        const position = mobile ? mobilePositions[index].map((value) => value * mobileScreenCompensation) : feature.position;
+        const panelScale = mobile ? 0.5 * mobileScreenCompensation : 1;
         timeline
           .to(panel.scale, { x: panelScale, y: panelScale, z: panelScale, duration: 0.18 }, 0.58)
           .to(panel.position, { x: position[0], y: position[1], z: position[2], duration: 0.4 }, 0.62)
