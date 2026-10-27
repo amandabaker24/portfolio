@@ -1,0 +1,112 @@
+/* The project sections live inside the phone journey. Their main screen starts
+   at the camera's full-viewport crop, then settles into its showcase position. */
+.dashboard-portal {
+  --portal-morph: 0;
+  --project-reveal: 0;
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.work-journey-anchor, .project-journey-anchor { position: absolute; top: calc((100% - 100svh) * 0.312); left: 0; width: 1px; height: 1px; }
+.showcase-embedded { height: 100%; }
+.showcase-embedded .showcase-stage { position: relative; height: 100%; min-height: 0; }
+.showcase-embedded .product-composition { inset: 0; width: 100%; height: 100%; }
+.showcase-embedded {
+  --main-left: 24.04vw;
+  --main-top: 18%;
+  --main-width: 63.96vw;
+  --main-aspect-height: 0.540872;
+  --main-rotation-y: -12deg;
+  --browser-height: 30px;
+}
+.showcase-embedded.showcase-menoviq {
+  --main-left: 19.36vw;
+  --main-width: 68.64vw;
+  --main-aspect-height: 0.531436;
+  --main-rotation-y: -10deg;
+}
+.showcase-embedded .quantum-main,
+.showcase-embedded .menoviq-main,
+.showcase-embedded .nori-main {
+  left: calc(var(--main-left) * var(--portal-morph));
+  right: auto;
+  top: calc(var(--main-top) * var(--portal-morph));
+  width: calc(100% + (var(--main-width) - 100%) * var(--portal-morph));
+  height: calc(100% + (var(--main-width) * var(--main-aspect-height) + var(--browser-height) - 100%) * var(--portal-morph));
+  border-width: calc(1px * var(--portal-morph));
+  border-radius: calc(10px * var(--portal-morph));
+  transform: perspective(1400px) rotateY(calc(var(--main-rotation-y) * var(--portal-morph))) rotateX(calc(7deg * var(--portal-morph))) rotateZ(calc(-5deg * var(--portal-morph)));
+}
+.showcase-embedded .quantum-main .product-browser-bar,
+.showcase-embedded .menoviq-main .product-browser-bar,
+.showcase-embedded .nori-main .product-browser-bar {
+  height: calc(var(--browser-height) * var(--portal-morph));
+  opacity: var(--portal-morph);
+  overflow: hidden;
+}
+.showcase-embedded .quantum-main img,
+.showcase-embedded .menoviq-main img,
+.showcase-embedded .nori-main img {
+  width: 100%;
+  height: calc(100% - var(--browser-height) * var(--portal-morph));
+  object-fit: cover;
+  object-position: center;
+}
+.showcase-embedded .quantum-detail { left: 10%; top: 41.4%; width: 30.42%; }
+.showcase-embedded .menoviq-detail { left: 10%; top: 42%; width: 23.4%; }
+.showcase-embedded .product-orbit-label { left: 11.56%; top: 25.8%; }
+.showcase-embedded .quantum-detail,
+.showcase-embedded .menoviq-detail,
+.showcase-embedded .nori-detail,
+.showcase-embedded .product-orbit-label,
+.showcase-embedded .showcase-shade,
+.showcase-embedded .showcase-ambient,
+.showcase-embedded .showcase-floor,
+.showcase-embedded .showcase-copy,
+.showcase-embedded .showcase-topline,
+.showcase-embedded .showcase-navigation,
+.showcase-embedded .showcase-footnote { opacity: var(--project-reveal); }
+.showcase-embedded .showcase-copy { transform: translateY(calc(36px * (1 - var(--project-reveal)))); }
+
+@media (min-width: 1600px) {
+  .showcase-embedded { --main-left: 26.96vw; --main-width: 59.04vw; }
+  .showcase-embedded.showcase-menoviq { --main-left: 22.64vw; --main-width: 63.36vw; }
+  .showcase-embedded .quantum-detail { left: 14%; width: 28.08%; }
+  .showcase-embedded .menoviq-detail { left: 14%; width: 21.6%; }
+}
+
+@media (min-width: 641px) and (max-width: 980px) {
+  .showcase-embedded { --main-left: 21.48vw; --main-width: 70.52vw; --main-top: 24%; }
+  .showcase-embedded.showcase-menoviq { --main-left: 16.32vw; --main-width: 75.68vw; }
+  .showcase-embedded .quantum-detail { left: 6%; width: 33.54%; top: 47.4%; }
+  .showcase-embedded .menoviq-detail { left: 6%; width: 25.8%; top: 48%; }
+}
+
+@media (max-width: 640px) {
+  .showcase-embedded { --main-left: 5.99vw; --main-width: 98.1vw; --main-top: 27%; --browser-height: 19px; }
+  .showcase-embedded.showcase-menoviq { --main-left: 1.63vw; --main-width: 102.46vw; }
+  .showcase-embedded .quantum-detail { left: 2.72%; top: 42.84%; width: 49.05%; }
+  .showcase-embedded .menoviq-detail { left: 3.81%; top: 43.8%; width: 40.33%; }
+}
+
+.showcase-embedded .product-tilt {
+  transform: rotateX(calc(var(--tilt-x) * var(--portal-morph))) rotateY(calc(var(--tilt-y) * var(--portal-morph)));
+}
+
+.showcase-embedded.showcase-nori {
+  --main-left: 52vw;
+  --main-top: 13%;
+  --main-width: min(24vw, 34vh);
+  --main-aspect-height: 2.103846;
+  --main-rotation-y: -10deg;
+}
+.showcase-embedded .nori-detail { left: 29%; top: 23%; width: min(20vw, 28vh); }
+
+@media (max-width: 640px) {
+  .showcase-embedded.showcase-nori { --main-left: 49vw; --main-width: 43vw; --main-top: 21%; }
+  .showcase-embedded .nori-detail { left: 9%; top: 28%; width: 37%; }
+}
