@@ -1,3 +1,4 @@
+import { ArrowIcon } from "@/components/arrow-icon";
 import Link from "next/link";
 
 export function CaseNavigation({ prefix }: { prefix: string }) {
@@ -9,5 +10,5 @@ export function CaseLabel({ children }: { children: React.ReactNode }) {
 }
 
 export function CaseNext({ href, number, title, description }: { href: string; number: string; title: string; description: string }) {
-  return <Link className="pc-next" href={href}><div><span className="pc-eyebrow">NEXT PROJECT / {number}</span><h2>{title}</h2><p>{description}</p></div><span className="pc-next-arrow" aria-hidden="true">↗</span></Link>;
+  return <Link className="pc-next" href={href}><div><span className="pc-eyebrow">NEXT PROJECT / {number}</span><h2>{title}</h2><p>{description}</p></div><span className="pc-next-arrow" aria-hidden="true"><ArrowIcon /></span></Link>;
 }

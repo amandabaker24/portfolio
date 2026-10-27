@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowIcon } from "@/components/arrow-icon";
 import Image from "next/image";
 import "./project-showcase.css";
 import Link from "next/link";
@@ -10,7 +11,7 @@ import { projects, type ProjectData } from "@/components/portfolio-data";
 import { journeyDuration, projectReadingTimes, noriScreens } from "@/components/project-journey";
 
 function BrowserBar({ name }: { name: string }) {
-  return <div className="product-browser-bar"><span className="browser-dots"><i /><i /><i /></span><span>{name}</span><span>↗</span></div>;
+  return <div className="product-browser-bar"><span className="browser-dots"><i /><i /><i /></span><span>{name}</span><span><ArrowIcon /></span></div>;
 }
 
 function QuantumPreview() {
@@ -126,7 +127,7 @@ export function ProjectStage({ project, embedded = false }: { project: ProjectDa
         <div className="showcase-copy">
           <p className="showcase-role">{project.role}</p>
           <h2 id={`title-${project.slug}`} className="showcase-title"><Link href={href}>{project.title}</Link></h2>
-          <div className="showcase-bottom"><div><p className="showcase-description">{project.subtitle}</p><Link href={href} className="showcase-cta">Explore project <span>↗</span></Link></div><div className="showcase-stack"><span>BUILT WITH</span><p>{project.stack.slice(0, 3).join(" / ")}</p></div></div>
+          <div className="showcase-bottom"><div><p className="showcase-description">{project.subtitle}</p><Link href={href} className="showcase-cta">Explore project <span><ArrowIcon /></span></Link></div><div className="showcase-stack"><span>BUILT WITH</span><p>{project.stack.slice(0, 3).join(" / ")}</p></div></div>
         </div>
         <div className="showcase-footnote"><span>SELECTED WORK — AMANDA BAKER</span><span>DESIGN → ENGINEERING</span></div>
       </div>

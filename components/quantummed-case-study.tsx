@@ -1,3 +1,4 @@
+import { ArrowIcon } from "@/components/arrow-icon";
 import Image from "next/image";
 import Link from "next/link";
 import type { ProjectCase } from "@/components/project-case-study";
@@ -17,15 +18,15 @@ export function QuantumMedCaseStudy({ project }: { project: ProjectCase }) {
     <article className="qm-case">
       <header className="qm-hero">
         <div className="qm-breadcrumb"><Link href="/#project-quantummed">← Selected work</Link><span><i /> HEALTH TECHNOLOGY / 01</span></div>
-        <div className="qm-project-name"><span className="qm-monogram" aria-hidden="true">Q<span>+</span></span><span>QuantumMed</span><span className="qm-case-label">DESIGN &amp; ENGINEERING CASE STUDY</span></div>
+        <div className="qm-project-name"><span className="qm-brand-mark" aria-hidden="true" /><span>QuantumMed</span><span className="qm-case-label">DESIGN &amp; ENGINEERING CASE STUDY</span></div>
         <div className="qm-hero-heading"><h1>Care, made<br /><em>clear.</em></h1><div className="qm-hero-intro"><p>A patient-first prescription and healthcare management platform.</p><span>Connecting the small moments of everyday care with the systems that make them possible.</span><a href="#qm-experience">Explore the product <span>↓</span></a></div></div>
         <div className="qm-meta"><div><span>MY ROLE</span><p>{project.role}</p></div><div><span>FOCUS</span><p>Product design → full stack engineering</p></div><div><span>PLATFORM</span><p>Patients, pharmacies &amp; care teams</p></div></div>
       </header>
 
       <figure className="qm-hero-visual" aria-label="QuantumMed dashboard and health calendar">
         <div className="qm-visual-glow" aria-hidden="true" />
-        <div className="qm-hero-dashboard qm-screen-frame"><div className="qm-browser-bar"><span aria-hidden="true"><i /><i /><i /></span><p>QuantumMed / Patient dashboard</p><span aria-hidden="true">↗</span></div><Image src="/quantummed/dashboard-hq.png" width={2936} height={1588} sizes="(max-width: 800px) 95vw, 1100px" alt="QuantumMed dashboard with medication schedules and care activity" preload /></div>
-        <div className="qm-hero-calendar qm-screen-frame"><div className="qm-browser-bar"><span aria-hidden="true"><i /><i /><i /></span><p>Health Calendar</p><span aria-hidden="true">↗</span></div><Image src="/quantummed/health-calendar-hq.png" width={2940} height={1596} sizes="(max-width: 640px) 60vw, 480px" alt="QuantumMed Health Calendar showing a patient’s care schedule" /></div>
+        <div className="qm-hero-dashboard qm-screen-frame"><div className="qm-browser-bar"><span aria-hidden="true"><i /><i /><i /></span><p>QuantumMed / Patient dashboard</p><span aria-hidden="true"><ArrowIcon /></span></div><Image src="/quantummed/dashboard-hq.png" width={2936} height={1588} sizes="(max-width: 800px) 95vw, 1100px" alt="QuantumMed dashboard with medication schedules and care activity" preload /></div>
+        <div className="qm-hero-calendar qm-screen-frame"><div className="qm-browser-bar"><span aria-hidden="true"><i /><i /><i /></span><p>Health Calendar</p><span aria-hidden="true"><ArrowIcon /></span></div><Image src="/quantummed/health-calendar-hq.png" width={2940} height={1596} sizes="(max-width: 640px) 60vw, 480px" alt="QuantumMed Health Calendar showing a patient’s care schedule" /></div>
         <figcaption><span>ONE CONNECTED VIEW OF CARE</span><span>INTERFACE → INFRASTRUCTURE</span></figcaption>
       </figure>
 
@@ -62,11 +63,11 @@ export function QuantumMedCaseStudy({ project }: { project: ProjectCase }) {
         ].map((group) => <div key={group.title}><span>{group.title}</span><p>{group.items.filter((item) => project.stack.includes(item)).join(" / ")}</p></div>)}</div>
       </section>
 
-      <section id="qm-contribution" className="qm-section qm-contribution"><div><div className="qm-section-label"><span>04 / MY CONTRIBUTION</span></div><h2>From the first<br />interaction to<br /><em>the systems beneath.</em></h2><p>Full Stack Software Engineer</p></div><div className="qm-contribution-list">{project.myRole.map((role, index) => <div key={role}><span>0{index + 1}</span><div><h3>{role.charAt(0) + role.slice(1).toLowerCase()}</h3><p>{contributions[role]}</p></div><span aria-hidden="true">↗</span></div>)}</div></section>
+      <section id="qm-contribution" className="qm-section qm-contribution"><div><div className="qm-section-label"><span>04 / MY CONTRIBUTION</span></div><h2>From the first<br />interaction to<br /><em>the systems beneath.</em></h2><p>Full Stack Software Engineer</p></div><div className="qm-contribution-list">{project.myRole.map((role, index) => <div key={role}><span>0{index + 1}</span><div><h3>{role.charAt(0) + role.slice(1).toLowerCase()}</h3><p>{contributions[role]}</p></div><span aria-hidden="true"><ArrowIcon /></span></div>)}</div></section>
 
-      <section className="qm-outcome"><div className="qm-section-label"><span>THE TAKEAWAY</span></div><h2>Less friction.<br /><em>More room for care.</em></h2><p>{project.outcome}</p><Link href="/#project-quantummed">Back to selected work <span>↗</span></Link></section>
+      <section className="qm-outcome"><div className="qm-section-label"><span>THE TAKEAWAY</span></div><h2>Less friction.<br /><em>More room for care.</em></h2><p>{project.outcome}</p><Link href="/#project-quantummed">Back to selected work <span><ArrowIcon /></span></Link></section>
 
-      <Link href="/work/menoviq" className="qm-next-project"><div><span>UP NEXT / 02</span><h2>Menoviq <span>↗</span></h2><p>A website builder made for restaurants.</p></div><div className="qm-next-image"><Image src="/menoviq/website-builder.png" width={3022} height={1606} sizes="(max-width: 640px) 90vw, 440px" alt="Menoviq website builder preview" /></div></Link>
+      <Link href="/work/menoviq" className="qm-next-project"><div><span>UP NEXT / 02</span><h2>Menoviq <span><ArrowIcon /></span></h2><p>A website builder made for restaurants.</p></div><div className="qm-next-image"><Image src="/menoviq/website-builder.png" width={3022} height={1606} sizes="(max-width: 640px) 90vw, 440px" alt="Menoviq website builder preview" /></div></Link>
     </article>
   );
 }

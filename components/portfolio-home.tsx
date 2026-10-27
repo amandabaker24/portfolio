@@ -106,6 +106,14 @@ export function PortfolioHome() {
             </p>
           </div>
           <div className="hero-scroll-cue"><span>SCROLL TO EXPLORE</span><i /></div>
+          <nav className="mobile-project-screens" aria-label="Explore the project screens">
+            <span>EXPLORE THE SCREENS</span>
+            <div>
+              <a href="#project-quantummed"><i />QuantumMed</a>
+              <a href="#project-menoviq"><i />Menoviq</a>
+              <a href="#project-nori"><i />Nori</a>
+            </div>
+          </nav>
           <DashboardPortal project="quantummed" />
           <DashboardPortal project="menoviq" />
           <DashboardPortal project="nori" />

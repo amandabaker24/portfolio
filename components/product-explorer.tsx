@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowIcon } from "@/components/arrow-icon";
 import Image from "next/image";
 import { useState } from "react";
 import { noriScreens } from "@/components/project-journey";
@@ -30,7 +31,7 @@ export function ProductExplorer({ product }: { product: keyof typeof experiences
       </div>
       <figure id={`${product}-preview`} className="pc-preview">
         <div className={product === "nori" ? "pc-phone" : "pc-window"}>
-          {product === "menoviq" && <div className="pc-window-bar" aria-hidden="true"><span>● ● ●</span><span>Menoviq / {screen.label}</span><span>↗</span></div>}
+          {product === "menoviq" && <div className="pc-window-bar" aria-hidden="true"><span>● ● ●</span><span>Menoviq / {screen.label}</span><span><ArrowIcon /></span></div>}
           <Image key={screen.src} src={screen.src} width={screen.width} height={screen.height} alt={screen.alt} sizes={product === "nori" ? "(max-width: 700px) 70vw, 280px" : "(max-width: 700px) 90vw, 760px"} />
         </div>
         <figcaption>{screen.label} <span>0{selected + 1} / 02</span></figcaption>

@@ -981,3 +981,30 @@ main {
 
 .case-product-screens { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start; }
 .case-product-screens img { width: 100%; height: auto; border-radius: 1.4rem; border: 1px solid var(--line); }
+
+/* Vector icons remain consistent on platforms that render arrow glyphs as emoji. */
+.arrow-icon { display: inline-block; width: 1em; height: 1em; flex-shrink: 0; vertical-align: -0.12em; }
+.mobile-project-screens { display: none; }
+@media (max-width: 640px) {
+  .hero-journey { height: 1700svh; }
+  .hero-stage { min-height: 0; }
+  .mobile-project-screens {
+    position: absolute;
+    z-index: 3;
+    left: 1.25rem;
+    right: 1.25rem;
+    bottom: max(1.5rem, env(safe-area-inset-bottom));
+    display: grid;
+    gap: .75rem;
+    opacity: 0;
+    visibility: hidden;
+    text-align: center;
+  }
+  .mobile-project-screens > span { color: #a4afa7; font-size: .5rem; letter-spacing: .16em; }
+  .mobile-project-screens > div { display: flex; justify-content: center; gap: .5rem; }
+  .mobile-project-screens a { display: flex; align-items: center; justify-content: center; gap: .4rem; min-height: 44px; padding: .6rem .85rem; border: 1px solid #b4bcb336; border-radius: 24px; background: #101611e8; color: #e9ede4; font-size: .65rem; }
+  .mobile-project-screens i { width: 4px; height: 4px; border-radius: 50%; background: #9abaff; }
+  .mobile-project-screens a:nth-child(2) i { background: #c7cc9a; }
+  .mobile-project-screens a:nth-child(3) i { background: #e9b17c; }
+  .mobile-project-screens a:focus-visible { outline: 2px solid #e9ede4; outline-offset: 3px; }
+}

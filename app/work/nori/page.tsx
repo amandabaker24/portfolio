@@ -1,3 +1,4 @@
+import { ArrowIcon } from "@/components/arrow-icon";
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
@@ -26,7 +27,7 @@ export default function NoriPage() {
 
       <section className="pc-section pc-contribution" id="nori-contribution"><div><CaseLabel>04 / MY CONTRIBUTION</CaseLabel><h2>Building for<br /><em>real kitchen life.</em></h2><p className="pc-muted">Software Engineer</p></div><div className="pc-role-list">{[["Mobile experience", "Bringing recipes, profiles, and everyday planning into a cohesive mobile interface."], ["Frontend engineering", "Building the React Native screens and interactions that connect the cooking journey."], ["Backend & API integration", "Connecting the application to Django services and the data supporting recipes and kitchen organization."]].map(([title, text], index) => <div key={title}><span>0{index + 1}</span><div><h3>{title}</h3><p>{text}</p></div></div>)}</div></section>
 
-      <section className="pc-takeaway"><span className="pc-eyebrow">THE TAKEAWAY</span><h2>Less “what’s for dinner?”<br /><em>More “let’s cook.”</em></h2><p>Nori brings recipe inspiration and everyday kitchen organization into one connected cooking experience, from the first saved recipe to the next meal.</p><Link href="/#project-nori">Back to selected work ↗</Link></section>
+      <section className="pc-takeaway"><span className="pc-eyebrow">THE TAKEAWAY</span><h2>Less “what’s for dinner?”<br /><em>More “let’s cook.”</em></h2><p>Nori brings recipe inspiration and everyday kitchen organization into one connected cooking experience, from the first saved recipe to the next meal.</p><Link href="/#project-nori">Back to selected work <ArrowIcon /></Link></section>
       <CaseNext href="/work/quantum-med" number="01" title="QuantumMed" description="Connecting the small moments of everyday care." />
     </article>
   );

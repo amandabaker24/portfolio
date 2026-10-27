@@ -13,7 +13,7 @@ type ScreenFeature = "menoviq" | "dashboard" | "calendar";
 const screenAspects: Record<ScreenFeature, number> = {
   menoviq: 3022 / 1606,
   dashboard: 2936 / 1588,
-  calendar: 2940 / 1666,
+  calendar: 2940 / 1596,
 };
 
 const featurePanels: { id: ScreenFeature; label: string; position: [number, number, number] }[] = [
@@ -230,7 +230,10 @@ function PhoneScene() {
     const dashboard = panelRefs.current[1];
     const menoviq = panelRefs.current[0];
     if (!dashboard || !menoviq) return;
-    const cameraStart = new THREE.Vector3(0, 0, 10.1);
+    const mobile = size.width <= 640;
+    // Frame a portrait phone against the viewport, rather than using desktop distance.
+    const assemblyDistance = mobile ? 7.4 : 10.1;
+    const cameraStart = new THREE.Vector3(0, 0, assemblyDistance);
     const screenCenter = new THREE.Vector3();
     const screenRotation = new THREE.Quaternion();
     const screenScale = new THREE.Vector3();
@@ -316,32 +319,53 @@ function PhoneScene() {
         },
       });
 
-      timeline
-        .to(perspectiveCamera.position, { z: 7.7, duration: 0.2 }, 0.06)
-        .to(perspectiveCamera.position, { z: 8.5, duration: 0.2 }, 0.22)
-        .to(phone.position, { x: 0, duration: 0.2 }, 0.2)
-        .to(phone.rotation, { y: -0.04, x: -0.02, z: 0, duration: 0.2 }, 0.12)
-        .to(".hero-copy", { opacity: 0, x: -70, duration: 0.18 }, 0.17)
-        .to(phone.rotation, { y: Math.PI * 2, x: 0.04, z: 0, duration: 0.34, ease: "none" }, 0.24)
-        .to(display.position, { z: 1.05, duration: 0.18 }, 0.55)
-        .to(phone.scale, { x: 0.86, y: 0.86, z: 0.86, duration: 0.25 }, 0.58)
-        .to(perspectiveCamera.position, { z: 9.5, duration: 0.35 }, 0.55)
-        .to(phone.rotation, { y: Math.PI * 2 + 0.12, x: 0.08, z: -0.04, duration: 0.08 }, 0.58)
-        .to(frameMaterial, { roughness: 0.27, duration: 0.2 }, 0.75)
-        .to(phone.position, { x: -0.25, y: 0, duration: 0.4 }, 0.6)
-        .to(perspectiveCamera.position, { z: 10.1, duration: 0.4 }, 0.78)
-        .to(phone.rotation, { y: Math.PI * 2 + 0.38, x: 0.16, z: -0.06, duration: 0.4 }, 0.78)
-        .to(phone.scale, { x: 0.68, y: 0.68, z: 0.68, duration: 0.4 }, 0.78)
-        .to(".hero-scroll-cue", { autoAlpha: 0, duration: 0.12 }, 0.65);
+      if (mobile) {
+        // The first swipe brings the actual phone screen forward and holds it
+        // before revealing the surrounding project panels.
+        timeline
+          .to(".hero-copy", { opacity: 0, y: -24, duration: 0.12 }, 0.03)
+          .to(phone.position, { x: 0, y: -0.12, duration: 0.2 }, 0.03)
+          .to(phone.rotation, { x: 0, y: 0, z: 0, duration: 0.2 }, 0.03)
+          .to(phone.scale, { x: 0.9, y: 0.9, z: 0.9, duration: 0.22 }, 0.03)
+          .to(perspectiveCamera.position, { z: 8, duration: 0.22 }, 0.03)
+          .to(display.position, { z: 0.55, duration: 0.25 }, 0.57)
+          .to(phone.position, { x: 0, y: -0.08, duration: 0.4 }, 0.65)
+          .to(phone.rotation, { x: 0.03, y: 0.08, z: -0.025, duration: 0.4 }, 0.65)
+          .to(phone.scale, { x: 0.68, y: 0.68, z: 0.68, duration: 0.4 }, 0.65)
+          .to(perspectiveCamera.position, { z: assemblyDistance, duration: 0.4 }, 0.65)
+          .to(".hero-scroll-cue", { autoAlpha: 0, duration: 0.1 }, 0.03)
+          .fromTo(".mobile-project-screens", { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.18 }, 0.76);
+      } else {
+        timeline
+          .to(perspectiveCamera.position, { z: 7.7, duration: 0.2 }, 0.06)
+          .to(perspectiveCamera.position, { z: 8.5, duration: 0.2 }, 0.22)
+          .to(phone.position, { x: 0, duration: 0.2 }, 0.2)
+          .to(phone.rotation, { y: -0.04, x: -0.02, z: 0, duration: 0.2 }, 0.12)
+          .to(".hero-copy", { opacity: 0, x: -70, duration: 0.18 }, 0.17)
+          .to(phone.rotation, { y: Math.PI * 2, x: 0.04, z: 0, duration: 0.34, ease: "none" }, 0.24)
+          .to(display.position, { z: 1.05, duration: 0.18 }, 0.55)
+          .to(phone.scale, { x: 0.86, y: 0.86, z: 0.86, duration: 0.25 }, 0.58)
+          .to(perspectiveCamera.position, { z: 9.5, duration: 0.35 }, 0.55)
+          .to(phone.rotation, { y: Math.PI * 2 + 0.12, x: 0.08, z: -0.04, duration: 0.08 }, 0.58)
+          .to(frameMaterial, { roughness: 0.27, duration: 0.2 }, 0.75)
+          .to(phone.position, { x: -0.25, y: 0, duration: 0.4 }, 0.6)
+          .to(perspectiveCamera.position, { z: 10.1, duration: 0.4 }, 0.78)
+          .to(phone.rotation, { y: Math.PI * 2 + 0.38, x: 0.16, z: -0.06, duration: 0.4 }, 0.78)
+          .to(phone.scale, { x: 0.68, y: 0.68, z: 0.68, duration: 0.4 }, 0.78)
+          .to(".hero-scroll-cue", { autoAlpha: 0, duration: 0.12 }, 0.65);
+      }
 
       featurePanels.forEach((feature, index) => {
         const panel = panelRefs.current[index];
         const material = panelMaterialRefs.current[index];
         if (!panel || !material) return;
 
+        const mobilePositions = [[-0.45, 1.85, 1.1], [0.2, 0.05, 1.35], [-0.5, -1.6, 1.2]];
+        const position = mobile ? mobilePositions[index] : feature.position;
+        const panelScale = mobile ? (index === 0 ? 0.64 : 0.58) : 1;
         timeline
-          .to(panel.scale, { x: 1, y: 1, z: 1, duration: 0.08 }, 0.58)
-          .to(panel.position, { x: feature.position[0], y: feature.position[1], z: feature.position[2], duration: 0.3 }, 0.62)
+          .to(panel.scale, { x: panelScale, y: panelScale, z: panelScale, duration: 0.18 }, 0.58)
+          .to(panel.position, { x: position[0], y: position[1], z: position[2], duration: 0.4 }, 0.62)
           .to(panel.rotation, { y: (index % 2 ? -1 : 1) * 0.18, x: index % 2 ? 0.12 : -0.1, duration: 0.3 }, 0.62)
           .to(material, { opacity: 1, duration: 0.08 }, 0.6);
       });

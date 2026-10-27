@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowIcon } from "@/components/arrow-icon";
 import Image from "next/image";
 import { useState } from "react";
 
@@ -27,12 +28,12 @@ export function QuantumMedExperience() {
             event.preventDefault();
             setActive(next);
             document.getElementById(`qm-tab-${views[next].id}`)?.focus();
-          }}><span>0{index + 1}</span>{item.title}<i aria-hidden="true">↗</i></button>
+          }}><span>0{index + 1}</span>{item.title}<i aria-hidden="true"><ArrowIcon /></i></button>
         ))}
       </div>
       <div id="qm-screen-panel" role="tabpanel" aria-labelledby={`qm-tab-${view.id}`} tabIndex={0}>
         <div className="qm-screen-frame">
-          <div className="qm-browser-bar"><span aria-hidden="true"><i /><i /><i /></span><p>QuantumMed / {view.title}</p><span aria-hidden="true">↗</span></div>
+          <div className="qm-browser-bar"><span aria-hidden="true"><i /><i /><i /></span><p>QuantumMed / {view.title}</p><span aria-hidden="true"><ArrowIcon /></span></div>
           <div className="qm-screen-image"><Image key={view.id} src={view.image} width={view.width} height={view.height} sizes="(max-width: 800px) 95vw, 1150px" alt={view.alt} /></div>
         </div>
         <div className="qm-screen-caption"><h3>{view.caption}</h3><p>{view.description}</p></div>
