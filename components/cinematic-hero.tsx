@@ -192,7 +192,7 @@ function FeaturePanel({
   }, [feature.id, compact]);
 
   return (
-    <group ref={panelRef} position={[0, 0, 0.22]} scale={0.01}>
+    <group ref={panelRef} position={[0, 0, 0.22]} scale={0}>
       <RoundedBox args={[3, 2.91 / screenAspects[feature.id] + 0.09, 0.055]} radius={0.18} smoothness={6}>
         <meshPhysicalMaterial color="#b4b1a9" metalness={0.7} roughness={0.24} />
       </RoundedBox>
@@ -204,7 +204,7 @@ function FeaturePanel({
             materialsRef.current[index] = material;
           }}
           transparent
-          opacity={0}
+          opacity={1}
           toneMapped={false}
         />
       </mesh>
@@ -494,11 +494,12 @@ function PhoneScene() {
         // Panels are children of the phone; preserve their visible size and spacing.
         const position = mobile ? mobilePositions[index].map((value) => value * mobileScreenCompensation) : feature.position;
         const panelScale = mobile ? 0.5 * mobileScreenCompensation : 1;
+        // Reveal the complete screen while it moves out, after the spin ends.
+        // Growing the frame before the screen faded in caused a white flash.
         timeline
-          .to(panel.scale, { x: panelScale, y: panelScale, z: panelScale, duration: 0.18 }, 0.58)
+          .to(panel.scale, { x: panelScale, y: panelScale, z: panelScale, duration: 0.4 }, 0.62)
           .to(panel.position, { x: position[0], y: position[1], z: position[2], duration: 0.4 }, 0.62)
-          .to(panel.rotation, { y: (index % 2 ? -1 : 1) * 0.18, x: index % 2 ? 0.12 : -0.1, duration: 0.3 }, 0.62)
-          .to(material, { opacity: 1, duration: 0.08 }, 0.6);
+          .to(panel.rotation, { y: (index % 2 ? -1 : 1) * 0.18, x: index % 2 ? 0.12 : -0.1, duration: 0.3 }, 0.62);
 
         if (mobile) {
           const finalPositions = [[-1.15, 1.55, 0.85], [1, 0.1, 0.85], [-1.15, -1.45, 0.85]];
