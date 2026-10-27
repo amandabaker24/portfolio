@@ -320,18 +320,19 @@ function PhoneScene() {
       });
 
       if (mobile) {
-        // The first swipe brings the actual phone screen forward and holds it
-        // before revealing the surrounding project panels.
+        // Start with the full-screen phone and a complete turn, then pull back
+        // to a smaller device with the three project screens at its sides.
         timeline
           .to(".hero-copy", { opacity: 0, y: -24, duration: 0.12 }, 0.03)
           .to(phone.position, { x: 0, y: -0.12, duration: 0.2 }, 0.03)
           .to(phone.rotation, { x: 0, y: 0, z: 0, duration: 0.2 }, 0.03)
           .to(phone.scale, { x: 0.9, y: 0.9, z: 0.9, duration: 0.22 }, 0.03)
           .to(perspectiveCamera.position, { z: 8, duration: 0.22 }, 0.03)
+          .to(phone.rotation, { y: reducedMotion ? 0 : Math.PI * 2, duration: 0.34, ease: "none" }, 0.24)
           .to(display.position, { z: 0.55, duration: 0.25 }, 0.57)
           .to(phone.position, { x: 0, y: -0.08, duration: 0.4 }, 0.65)
-          .to(phone.rotation, { x: 0.03, y: 0.08, z: -0.025, duration: 0.4 }, 0.65)
-          .to(phone.scale, { x: 0.68, y: 0.68, z: 0.68, duration: 0.4 }, 0.65)
+          .to(phone.rotation, { x: 0.03, y: (reducedMotion ? 0 : Math.PI * 2) + 0.08, z: -0.025, duration: 0.4 }, 0.65)
+          .to(phone.scale, { x: 0.52, y: 0.52, z: 0.52, duration: 0.4 }, 0.65)
           .to(perspectiveCamera.position, { z: assemblyDistance, duration: 0.4 }, 0.65)
           .to(".hero-scroll-cue", { autoAlpha: 0, duration: 0.1 }, 0.03)
           .fromTo(".mobile-project-screens", { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.18 }, 0.76);
@@ -360,9 +361,9 @@ function PhoneScene() {
         const material = panelMaterialRefs.current[index];
         if (!panel || !material) return;
 
-        const mobilePositions = [[-0.45, 1.85, 1.1], [0.2, 0.05, 1.35], [-0.5, -1.6, 1.2]];
+        const mobilePositions = [[-1.15, 1.55, 0.85], [1, 0.1, 0.85], [-1.15, -1.45, 0.85]];
         const position = mobile ? mobilePositions[index] : feature.position;
-        const panelScale = mobile ? (index === 0 ? 0.64 : 0.58) : 1;
+        const panelScale = mobile ? 0.46 : 1;
         timeline
           .to(panel.scale, { x: panelScale, y: panelScale, z: panelScale, duration: 0.18 }, 0.58)
           .to(panel.position, { x: position[0], y: position[1], z: position[2], duration: 0.4 }, 0.62)
