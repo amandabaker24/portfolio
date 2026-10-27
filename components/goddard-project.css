@@ -1,0 +1,118 @@
+.goddard-project {
+  --goddard-line: #b9cce223;
+  position: relative;
+  margin: 5rem auto 7rem;
+  padding: 2rem 2.5rem 2.5rem;
+  border: 1px solid var(--goddard-line);
+  border-radius: 4px;
+  background: radial-gradient(ellipse at 85% 55%, #20395755, transparent 65%), #10151c;
+  color: #edf0f3;
+  scroll-margin-top: 6rem;
+  overflow: hidden;
+}
+.goddard-topline, .goddard-art-label, .goddard-art-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: .52rem;
+  letter-spacing: .1em;
+  color: #8e9eb3;
+}
+.goddard-topline { padding-bottom: 1.5rem; border-bottom: 1px solid var(--goddard-line); }
+.goddard-layout { display: grid; grid-template-columns: 1fr 1.1fr; gap: 2rem; align-items: center; padding-top: 2.5rem; }
+.goddard-art { min-width: 0; padding: 1rem; }
+.goddard-art svg { display: block; width: 100%; height: auto; }
+.goddard-art-label, .goddard-art-footer { font-size: .43rem; letter-spacing: .07em; }
+.goddard-art-footer { padding-top: 1rem; border-top: 1px solid var(--goddard-line); }
+
+/* A readable project brief, styled as a terminal rather than a text input. */
+.goddard-terminal {
+  --terminal-green: #a5cfaa;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100svh - 13rem);
+  overflow: hidden;
+  border: 1px solid #9fb7a433;
+  border-radius: 9px;
+  background: #101611f5;
+  box-shadow: 0 18px 65px #0004, 0 1px 0 #d4e8d908 inset;
+  font-family: var(--font-geist-mono), 'Courier New', monospace;
+  letter-spacing: -.025em;
+}
+.goddard-terminal-bar {
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+  min-height: 42px;
+  flex-shrink: 0;
+  padding: .7rem 1rem;
+  border-bottom: 1px solid #a5cfaa1a;
+  background: #d2e1d205;
+  color: #8eaa94;
+  font-size: .57rem;
+  letter-spacing: 0;
+}
+.goddard-terminal-dots { display: inline-flex; gap: 5px; }
+.goddard-terminal-dots i { width: 5px; height: 5px; border: 1px solid #9caf9e66; border-radius: 50%; }
+.goddard-terminal-status { margin-left: auto; color: #bfd5aa; white-space: nowrap; }
+.goddard-terminal-body {
+  min-height: 0;
+  padding: 1.5rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #506a56 #101611;
+  color: #a6b3a8;
+  font-size: .75rem;
+  line-height: 1.75;
+}
+.goddard-terminal-body:focus-visible { outline: 1px solid var(--terminal-green); outline-offset: -4px; }
+.goddard-command { margin: 0 0 1.3rem; color: #b8c9bb; }
+.goddard-command > span, .goddard-terminal-end > span:first-child { margin-right: .5rem; color: var(--terminal-green); }
+.goddard-terminal h2 { margin: 0 0 1rem; font-size: clamp(1.6rem, 2.5vw, 2.4rem); line-height: 1.1; font-weight: 500; letter-spacing: -.065em; color: #e4ece4; }
+.goddard-terminal h2 > span { color: var(--terminal-green); }
+.goddard-terminal-intro { margin: 0; max-width: 36rem; }
+.goddard-terminal-heading { margin: 1.6rem 0 1rem; color: var(--terminal-green); font-size: .73rem; }
+.goddard-learning-goals { margin: 0; display: grid; gap: 1rem; }
+.goddard-learning-goals dt { display: flex; gap: .75rem; font-size: .73rem; color: #d0dfd2; }
+.goddard-learning-goals dt > span { color: #66826d; font-size: .62rem; padding-top: .1rem; }
+.goddard-learning-goals dd { margin: .25rem 0 0 1.65rem; color: #94a398; font-size: .7rem; line-height: 1.7; }
+.goddard-terminal-end { margin: 1.5rem 0 0; color: #c1d1c4; font-size: .67rem; }
+.goddard-terminal-cursor { display: inline-block; width: 6px; height: 11px; margin-left: .5rem; background: var(--terminal-green); vertical-align: -.1em; }
+.goddard-terminal-footer { display: flex; justify-content: space-between; gap: .7rem; padding: .75rem 1rem; border-top: 1px solid #a5cfaa1a; color: #6d8674; font-size: .43rem; letter-spacing: .05em; flex-shrink: 0; }
+.goddard-terminal-scroll { display: none; white-space: nowrap; }
+
+/* Keep the live 3D dog on the right, with the terminal centered to its left. */
+.goddard-embedded { width: 100%; height: 100%; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; }
+.goddard-embedded .goddard-topline { position: absolute; top: 7rem; left: 5vw; right: 5vw; border: 0; padding: 0; opacity: var(--project-reveal); }
+.goddard-embedded .goddard-layout { display: block; padding: 0; }
+.goddard-embedded .goddard-copy { position: absolute; left: 5vw; top: 52%; width: min(42vw, 600px); opacity: var(--project-reveal); transform: translateY(calc(-50% + 24px * (1 - var(--project-reveal)))); }
+
+@media (max-width: 700px) {
+  .goddard-project { margin: 3rem 0 4rem; padding: 1.25rem; scroll-margin-top: 5rem; }
+  .goddard-topline { font-size: .46rem; padding-bottom: 1rem; }
+  .goddard-layout { grid-template-columns: 1fr; padding-top: 1.7rem; gap: 2rem; }
+  .goddard-art { padding: 0; }
+  .goddard-art-label, .goddard-art-footer { font-size: .38rem; }
+}
+@media (max-width: 640px) {
+  .goddard-embedded { margin: 0; padding: 0; }
+  .goddard-embedded .goddard-topline { top: 5rem; left: 1.25rem; right: 1.25rem; }
+  .goddard-embedded .goddard-copy { left: 1rem; right: 1rem; width: auto; top: auto; bottom: max(1rem, env(safe-area-inset-bottom)); transform: translateY(calc(24px * (1 - var(--project-reveal)))); }
+  .goddard-terminal { max-height: 54svh; }
+  .goddard-terminal-bar { min-height: 36px; padding: .65rem .8rem; font-size: .53rem; gap: .55rem; }
+  .goddard-terminal-body { padding: 1rem; font-size: .72rem; line-height: 1.7; }
+  .goddard-terminal h2 { font-size: 1.7rem; }
+  .goddard-command { margin-bottom: 1rem; font-size: .67rem; }
+  .goddard-terminal-heading { font-size: .7rem; }
+  .goddard-learning-goals dt { font-size: .72rem; }
+  .goddard-learning-goals dd { font-size: .7rem; }
+  .goddard-terminal-footer { padding: .65rem .8rem; font-size: .37rem; letter-spacing: 0; }
+  .goddard-terminal-scroll { display: inline; }
+}
+@media (min-width: 641px) and (max-height: 760px) {
+  .goddard-embedded .goddard-topline { top: 5.5rem; }
+  .goddard-terminal { max-height: calc(100svh - 10rem); }
+  .goddard-terminal-scroll { display: inline; }
+}

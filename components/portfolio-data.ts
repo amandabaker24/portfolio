@@ -1,5 +1,6 @@
 export type ProjectData = {
   slug: string;
+  status?: "coming-soon";
   number: string;
   title: string;
   subtitle: string;
@@ -89,6 +90,20 @@ export const projects: ProjectData[] = [
       { label: "Core features", value: "Recipes, cookbooks, pantry, meal plans" },
       { label: "Community", value: "Cook profiles and shared recipes" },
     ],
+  },
+  {
+    slug: "goddard",
+    status: "coming-soon",
+    number: "04",
+    title: "GODDARD",
+    subtitle: "A robotic dog inspired by Goddard from Jimmy Neutron. Coming soon.",
+    role: "Robotics project",
+    stack: [],
+    summary: "A future robotics project inspired by Jimmy Neutron’s robotic companion, Goddard.",
+    description: "Bringing a childhood inspiration into the physical world through robotics.",
+    accent: "#abcfff",
+    platform: "Robotics / Coming soon",
+    stats: [],
   },
 ];
 

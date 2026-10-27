@@ -89,10 +89,11 @@ export function PortfolioHome() {
   return (
     <div ref={revealRef} className="page-shell">
       <section className="hero-journey" aria-label="Selected projects product journey">
-        <span id="work" className="work-journey-anchor" aria-hidden="true" />
+        <span id="work" className="work-journey-anchor" style={{ top: `calc((100% - 100svh) * ${projectReadingTimes.quantummed / journeyDuration})` }} aria-hidden="true" />
         <span id="project-quantummed" className="project-journey-anchor" style={{ top: `calc((100% - 100svh) * ${projectReadingTimes.quantummed / journeyDuration})` }} aria-hidden="true" />
         <span id="project-menoviq" className="project-journey-anchor" style={{ top: `calc((100% - 100svh) * ${projectReadingTimes.menoviq / journeyDuration})` }} aria-hidden="true" />
         <span id="project-nori" className="project-journey-anchor" style={{ top: `calc((100% - 100svh) * ${projectReadingTimes.nori / journeyDuration})` }} aria-hidden="true" />
+        <span id="project-goddard" className="project-journey-anchor" style={{ top: `calc((100% - 100svh) * ${projectReadingTimes.goddard / journeyDuration})` }} aria-hidden="true" />
         <div className="hero-stage">
           <CinematicHero />
           <div className="hero-copy">
@@ -112,11 +113,13 @@ export function PortfolioHome() {
               <a href="#project-quantummed"><i />QuantumMed</a>
               <a href="#project-menoviq"><i />Menoviq</a>
               <a href="#project-nori"><i />Nori</a>
+              <a href="#project-goddard"><i />Goddard</a>
             </div>
           </nav>
           <DashboardPortal project="quantummed" />
           <DashboardPortal project="menoviq" />
           <DashboardPortal project="nori" />
+          <DashboardPortal project="goddard" />
         </div>
       </section>
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { GoddardProject } from "@/components/goddard-project";
 import { ArrowIcon } from "@/components/arrow-icon";
 import Image from "next/image";
 import "./project-showcase.css";
@@ -136,5 +137,5 @@ export function ProjectStage({ project, embedded = false }: { project: ProjectDa
 }
 
 export function ProjectShowcase() {
-  return <div className="project-showcase">{projects.map((project) => <ProjectStage key={project.slug} project={project} />)}</div>;
+  return <div className="project-showcase">{projects.map((project) => project.status === "coming-soon" ? <GoddardProject key={project.slug} /> : <ProjectStage key={project.slug} project={project} />)}</div>;
 }

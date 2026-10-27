@@ -6,6 +6,7 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { GoddardRobot } from "@/components/goddard-robot";
 import { journeyDuration, noriScreens } from "@/components/project-journey";
 
 type ScreenFeature = "menoviq" | "dashboard" | "calendar";
@@ -214,6 +215,9 @@ function PhoneScene() {
   const perspectiveCamera = camera as THREE.PerspectiveCamera;
   const phoneRef = useRef<THREE.Group>(null);
   const displayRef = useRef<THREE.Group>(null);
+  const dogRef = useRef<THREE.Group>(null);
+  const hardwareRef = useRef<THREE.Group>(null);
+  const dogPortalRef = useRef<THREE.Group>(null);
   const frameMaterialRef = useRef<THREE.MeshPhysicalMaterial>(null);
   const panelRefs = useRef<(THREE.Group | null)[]>([]);
   const panelMaterialRefs = useRef<(THREE.MeshBasicMaterial | null)[]>([]);
@@ -230,6 +234,16 @@ function PhoneScene() {
     const dashboard = panelRefs.current[1];
     const menoviq = panelRefs.current[0];
     if (!dashboard || !menoviq) return;
+    const deviceParts = [hardwareRef.current, ...panelRefs.current].filter((part): part is THREE.Group => Boolean(part));
+    const deviceMaterials = new Map<THREE.Material, { opacity: number; transparent: boolean }>();
+    deviceParts.forEach((part) => part.traverse((object) => {
+      if (!(object instanceof THREE.Mesh)) return;
+      const materials = Array.isArray(object.material) ? object.material : [object.material];
+      materials.forEach((material: THREE.Material) => {
+        if (!deviceMaterials.has(material)) deviceMaterials.set(material, { opacity: material.opacity, transparent: material.transparent });
+      });
+    }));
+    let previousDeviceFade = 0;
     const mobile = size.width <= 640;
     // Frame a portrait phone against the viewport, rather than using desktop distance.
     const assemblyDistance = mobile ? 7.4 : 10.1;
@@ -240,6 +254,11 @@ function PhoneScene() {
     const cameraTarget = new THREE.Vector3();
     const screenNormal = new THREE.Vector3();
     const neutralRotation = new THREE.Quaternion();
+    const dogLocalBounds = new THREE.Box3(new THREE.Vector3(-1.85, -1.06, -0.55), new THREE.Vector3(1.4, 2.05, 1.1));
+    const dogBounds = new THREE.Box3();
+    const dogCenter = new THREE.Vector3();
+    const dogSize = new THREE.Vector3();
+    const dogCameraTarget = new THREE.Vector3();
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     // Follow the selected panel, including its parent phone's transform.
@@ -266,12 +285,36 @@ function PhoneScene() {
       perspectiveCamera.quaternion.slerpQuaternions(neutralRotation, screenRotation, progress);
     };
 
+    const updateDogCamera = (progress: number) => {
+      const dog = dogRef.current;
+      if (!dog || progress <= 0) return;
+      dog.updateWorldMatrix(true, false);
+      dogBounds.copy(dogLocalBounds).applyMatrix4(dog.matrixWorld);
+      dogBounds.getCenter(dogCenter);
+      dogBounds.getSize(dogSize);
+      const tangent = Math.tan(THREE.MathUtils.degToRad(perspectiveCamera.fov / 2));
+      // Reserve space beside the model on desktop and beneath it on mobile.
+      const distance = Math.max(
+        dogSize.x / (2 * tangent * perspectiveCamera.aspect * (mobile ? 0.65 : 0.42)),
+        dogSize.y / (2 * tangent * (mobile ? 0.38 : 0.65)),
+      ) + dogSize.z * 0.15;
+      const viewHeight = distance * 2 * tangent;
+      dogCameraTarget.copy(dogCenter);
+      dogCameraTarget.x -= mobile ? 0 : viewHeight * perspectiveCamera.aspect * 0.18;
+      dogCameraTarget.y -= mobile ? viewHeight * 0.23 : 0;
+      dogCameraTarget.z += distance;
+      const amount = reducedMotion ? Number(progress > 0.5) : progress;
+      perspectiveCamera.position.lerpVectors(cameraStart, dogCameraTarget, amount);
+      perspectiveCamera.quaternion.identity();
+    };
+
     const clamp = (value: number) => THREE.MathUtils.clamp(value, 0, 1);
     const ease = gsap.parseEase("power2.inOut");
-    const portalElements = ["quantummed", "menoviq", "nori"].map((project) =>
+    const portalElements = ["quantummed", "menoviq", "nori", "goddard"].map((project) =>
       journey.querySelector<HTMLElement>(`.dashboard-portal-${project}`),
     );
-    const initialStyles = portalElements.filter((element): element is HTMLElement => Boolean(element))
+    const mobileShortcuts = journey.querySelector<HTMLElement>(".mobile-project-screens");
+    const initialStyles = [...portalElements, mobileShortcuts].filter((element): element is HTMLElement => Boolean(element))
       .map((element) => ({ element, cssText: element.style.cssText }));
     const renderPortal = (index: number, time: number, entry: number, morphEntry: number, exit = Infinity) => {
       const overlay = portalElements[index];
@@ -296,12 +339,53 @@ function PhoneScene() {
           const time = timeline.time();
           renderPortal(0, time, 1.84, 1.94, 2.75);
           renderPortal(1, time, 4.42, 4.52, 5.35);
-          renderPortal(2, time, 7.02, 7.12);
+          renderPortal(2, time, 7.02, 7.12, 7.95);
+          renderPortal(3, time, 9.35, 9.42);
+          const quantumProgress = ease(clamp((time - 1.32) / 0.6)) * (1 - ease(clamp((time - 3.06) / 0.6)));
+          const menoviqProgress = ease(clamp((time - 3.9) / 0.6)) * (1 - ease(clamp((time - 5.66) / 0.6)));
+          const noriProgress = ease(clamp((time - 6.5) / 0.6)) * (1 - ease(clamp((time - 8.26) / 0.6)));
+          const goddardProgress = ease(clamp((time - 9.1) / 0.65));
+          // As the camera leaves the phone, let the surrounding interfaces fade
+          // into the studio so the fourth reveal belongs to the dog.
+          const deviceFade = ease(clamp((goddardProgress - 0.15) / 0.7));
+          if (deviceFade > 0 || previousDeviceFade > 0) {
+            deviceParts.forEach((part) => { part.visible = deviceFade < 0.999; });
+            deviceMaterials.forEach((original, material) => {
+              material.opacity = 1 - deviceFade;
+              const transparent = deviceFade > 0 || original.transparent;
+              if (material.transparent !== transparent) {
+                material.transparent = transparent;
+                material.needsUpdate = true;
+              }
+            });
+          }
+          previousDeviceFade = deviceFade;
+          if (mobileShortcuts && mobile) mobileShortcuts.style.visibility = time > 0.76 && goddardProgress < 0.15 ? "visible" : "hidden";
+          // The dog emerges through the screen as the project panels open.
+          // Retreat into the phone during a zoom, then reappear on the pullback.
+          const entrance = reducedMotion ? Number(time >= 1.02) : ease(clamp((time - 0.8) / 0.36));
+          const focus = Math.max(quantumProgress, menoviqProgress, noriProgress);
+          const emergence = entrance * (1 - ease(clamp(focus / 0.35)));
+          const dog = dogRef.current;
+          if (dog) {
+            dog.visible = emergence > 0.005;
+            dog.scale.setScalar((mobile ? 0.8 : 0.78) * emergence);
+            // Clear the device silhouette: beside it on desktop, below on mobile.
+            dog.position.set(
+              THREE.MathUtils.lerp(0.45, mobile ? 0.15 : 3.5, emergence),
+              THREE.MathUtils.lerp(-0.72, mobile ? -4.25 : -1.95, emergence),
+              THREE.MathUtils.lerp(-0.3, 0.85, emergence),
+            );
+            dog.rotation.set(THREE.MathUtils.lerp(-0.35, 0.08, emergence), -0.35, -0.05);
+          }
+          const dogPortal = dogPortalRef.current;
+          if (dogPortal) {
+            dogPortal.visible = emergence > 0.005 && entrance < 0.99;
+            dogPortal.scale.setScalar(emergence);
+          }
           if (time >= 1.18) {
-            const quantumProgress = ease(clamp((time - 1.32) / 0.6)) * (1 - ease(clamp((time - 3.06) / 0.6)));
-            const menoviqProgress = ease(clamp((time - 3.9) / 0.6)) * (1 - ease(clamp((time - 5.66) / 0.6)));
-            const noriProgress = ease(clamp((time - 6.5) / 0.6));
             updateProjectCamera(quantumProgress, menoviqProgress, noriProgress);
+            updateDogCamera(goddardProgress);
           } else {
             perspectiveCamera.quaternion.identity();
           }
@@ -330,9 +414,9 @@ function PhoneScene() {
           .to(perspectiveCamera.position, { z: 8, duration: 0.22 }, 0.03)
           .to(phone.rotation, { y: reducedMotion ? 0 : Math.PI * 2, duration: 0.34, ease: "none" }, 0.24)
           .to(display.position, { z: 0.55, duration: 0.25 }, 0.57)
-          .to(phone.position, { x: 0, y: -0.08, duration: 0.4 }, 0.65)
+          .to(phone.position, { x: 0, y: 0.65, duration: 0.4 }, 0.65)
           .to(phone.rotation, { x: 0.03, y: (reducedMotion ? 0 : Math.PI * 2) + 0.08, z: -0.025, duration: 0.4 }, 0.65)
-          .to(phone.scale, { x: 0.52, y: 0.52, z: 0.52, duration: 0.4 }, 0.65)
+          .to(phone.scale, { x: 0.42, y: 0.42, z: 0.42, duration: 0.4 }, 0.65)
           .to(perspectiveCamera.position, { z: assemblyDistance, duration: 0.4 }, 0.65)
           .to(".hero-scroll-cue", { autoAlpha: 0, duration: 0.1 }, 0.03)
           .fromTo(".mobile-project-screens", { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.18 }, 0.76);
@@ -363,7 +447,7 @@ function PhoneScene() {
 
         const mobilePositions = [[-1.15, 1.55, 0.85], [1, 0.1, 0.85], [-1.15, -1.45, 0.85]];
         const position = mobile ? mobilePositions[index] : feature.position;
-        const panelScale = mobile ? 0.46 : 1;
+        const panelScale = mobile ? 0.56 : 1;
         timeline
           .to(panel.scale, { x: panelScale, y: panelScale, z: panelScale, duration: 0.18 }, 0.58)
           .to(panel.position, { x: position[0], y: position[1], z: position[2], duration: 0.4 }, 0.62)
@@ -371,12 +455,20 @@ function PhoneScene() {
           .to(material, { opacity: 1, duration: 0.08 }, 0.6);
       });
 
-      // Reserve the remaining scroll for all three projects and their pullbacks.
+      // Reserve scroll for all four projects, including the final phone-to-dog shot.
       timeline.to({}, { duration: journeyDuration - 1.18 }, 1.18);
     }, journey);
 
     return () => {
       context.revert();
+      deviceParts.forEach((part) => { part.visible = true; });
+      deviceMaterials.forEach((original, material) => {
+        material.opacity = original.opacity;
+        if (material.transparent !== original.transparent) {
+          material.transparent = original.transparent;
+          material.needsUpdate = true;
+        }
+      });
       initialStyles.forEach(({ element, cssText }) => { element.style.cssText = cssText; });
       perspectiveCamera.quaternion.identity();
     };
@@ -408,8 +500,17 @@ function PhoneScene() {
         scale={size.width < 640 ? 0.56 : size.width < 980 ? 0.64 : 1}
         rotation={[-0.06, -0.3, 0.035]}
       >
-        <PhoneFrame materialRef={frameMaterialRef} />
-        <MainDisplay displayRef={displayRef} />
+        <group ref={hardwareRef}>
+          <PhoneFrame materialRef={frameMaterialRef} />
+          <MainDisplay displayRef={displayRef} />
+        </group>
+        <group ref={dogPortalRef} position={[0.35, -0.72, 0.58]} visible={false}>
+          <mesh><torusGeometry args={[0.65, 0.018, 8, 48]} /><meshBasicMaterial color="#9bc6ff" transparent opacity={0.65} /></mesh>
+          <mesh><ringGeometry args={[0.68, 0.76, 48]} /><meshBasicMaterial color="#548ad2" transparent opacity={0.15} side={THREE.DoubleSide} /></mesh>
+        </group>
+        <group ref={dogRef} visible={false} scale={0.001}>
+          <GoddardRobot />
+        </group>
         {featurePanels.map((feature, index) => (
           <FeaturePanel
             key={feature.id}

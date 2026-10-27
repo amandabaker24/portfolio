@@ -171,7 +171,7 @@ main {
   position: relative;
   left: 50%;
   width: 100vw;
-  height: 2440vh;
+  height: 3200vh;
   margin-left: -50vw;
   margin-top: -1.25rem;
 }
@@ -986,7 +986,7 @@ main {
 .arrow-icon { display: inline-block; width: 1em; height: 1em; flex-shrink: 0; vertical-align: -0.12em; }
 .mobile-project-screens { display: none; }
 @media (max-width: 640px) {
-  .hero-journey { height: 1700svh; }
+  .hero-journey { height: 2240svh; }
   .hero-stage { min-height: 0; }
   .mobile-project-screens {
     position: absolute;
@@ -1007,4 +1007,10 @@ main {
   .mobile-project-screens a:nth-child(2) i { background: #c7cc9a; }
   .mobile-project-screens a:nth-child(3) i { background: #e9b17c; }
   .mobile-project-screens a:focus-visible { outline: 2px solid #e9ede4; outline-offset: 3px; }
+}
+
+@media (max-width: 640px) {
+  .mobile-project-screens > div { flex-wrap: wrap; gap: .35rem; }
+  .mobile-project-screens a { padding-inline: .65rem; font-size: .6rem; }
+  .mobile-project-screens a:nth-child(4) i { background: #abcfff; }
 }
