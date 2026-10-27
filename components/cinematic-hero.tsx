@@ -444,8 +444,8 @@ function PhoneScene() {
       };
 
       if (mobile) {
-        // Start with the full-screen phone and a complete turn, then pull back
-        // to a smaller device with the three project screens at its sides.
+        // Keep the phone and its screens large through the first three projects.
+        // Only make room below the device when Goddard's final entrance begins.
         timeline
           .to(".hero-copy", { opacity: 0, y: -24, duration: 0.12 }, 0.03)
           .to(phone.position, { x: 0, y: -0.12, duration: 0.2 }, 0.03)
@@ -454,10 +454,12 @@ function PhoneScene() {
           .to(perspectiveCamera.position, { z: 8, duration: 0.22 }, 0.03)
           .to(phone.rotation, { y: reducedMotion ? 0 : Math.PI * 2, duration: 0.34, ease: "sine.inOut" }, 0.24)
           .to(display.position, { z: 0.55, duration: 0.25 }, 0.57)
-          .to(phone.position, { x: 0, y: 0.65, duration: 0.4 }, 0.65)
+          .to(phone.position, { x: 0, y: -0.05, duration: 0.4 }, 0.65)
           .to(phone.rotation, { x: 0.03, y: (reducedMotion ? 0 : Math.PI * 2) + 0.08, z: -0.025, duration: 0.4 }, 0.65)
-          .to(phone.scale, { x: 0.42, y: 0.42, z: 0.42, duration: 0.4 }, 0.65)
+          .to(phone.scale, { x: 0.65, y: 0.65, z: 0.65, duration: 0.4 }, 0.65)
           .to(perspectiveCamera.position, { z: assemblyDistance, duration: 0.4 }, 0.65)
+          .to(phone.position, { y: 0.65, duration: 0.28 }, 8.86)
+          .to(phone.scale, { x: 0.42, y: 0.42, z: 0.42, duration: 0.28 }, 8.86)
           .to(".hero-scroll-cue", { autoAlpha: 0, duration: 0.1 }, 0.03)
           .fromTo(".mobile-project-screens", { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.18 }, 0.76);
       } else {
@@ -485,14 +487,22 @@ function PhoneScene() {
         const material = panelMaterialRefs.current[index];
         if (!panel || !material) return;
 
-        const mobilePositions = [[-1.15, 1.55, 0.85], [1, 0.1, 0.85], [-1.15, -1.45, 0.85]];
+        const mobilePositions = [[-0.55, 1.85, 0.85], [0.55, 0.1, 0.85], [-0.6, -1.8, 0.85]];
         const position = mobile ? mobilePositions[index] : feature.position;
-        const panelScale = mobile ? 0.56 : 1;
+        const panelScale = mobile ? 0.5 : 1;
         timeline
           .to(panel.scale, { x: panelScale, y: panelScale, z: panelScale, duration: 0.18 }, 0.58)
           .to(panel.position, { x: position[0], y: position[1], z: position[2], duration: 0.4 }, 0.62)
           .to(panel.rotation, { y: (index % 2 ? -1 : 1) * 0.18, x: index % 2 ? 0.12 : -0.1, duration: 0.3 }, 0.62)
           .to(material, { opacity: 1, duration: 0.08 }, 0.6);
+
+        if (mobile) {
+          const finalPositions = [[-1.15, 1.55, 0.85], [1, 0.1, 0.85], [-1.15, -1.45, 0.85]];
+          const finalPosition = finalPositions[index];
+          timeline
+            .to(panel.position, { x: finalPosition[0], y: finalPosition[1], z: finalPosition[2], duration: 0.28 }, 8.86)
+            .to(panel.scale, { x: 0.56, y: 0.56, z: 0.56, duration: 0.28 }, 8.86);
+        }
       });
 
       // Reserve scroll for all four projects, including the final phone-to-dog shot.
