@@ -220,7 +220,6 @@ function PhoneScene() {
   const displayRef = useRef<THREE.Group>(null);
   const dogRef = useRef<THREE.Group>(null);
   const hardwareRef = useRef<THREE.Group>(null);
-  const dogPortalRef = useRef<THREE.Group>(null);
   const frameMaterialRef = useRef<THREE.MeshPhysicalMaterial>(null);
   const panelRefs = useRef<(THREE.Group | null)[]>([]);
   const panelMaterialRefs = useRef<(THREE.MeshBasicMaterial | null)[]>([]);
@@ -432,11 +431,6 @@ function PhoneScene() {
           );
           dog.rotation.set(THREE.MathUtils.lerp(-0.35, 0.08, emergence), -0.35, -0.05);
         }
-        const dogPortal = dogPortalRef.current;
-        if (dogPortal) {
-          dogPortal.visible = emergence > 0.005 && entrance < 0.99;
-          dogPortal.scale.setScalar(emergence);
-        }
         if (time >= 1.18) {
           updateProjectCamera(quantumProgress, menoviqProgress, noriProgress);
           updateDogCamera(goddardProgress);
@@ -548,10 +542,6 @@ function PhoneScene() {
         <group ref={hardwareRef}>
           <PhoneFrame materialRef={frameMaterialRef} />
           <MainDisplay displayRef={displayRef} compact={compact} />
-        </group>
-        <group ref={dogPortalRef} position={[0.35, -0.72, 0.58]} visible={false}>
-          <mesh><torusGeometry args={[0.65, 0.018, 8, 48]} /><meshBasicMaterial color="#9bc6ff" transparent opacity={0.65} /></mesh>
-          <mesh><ringGeometry args={[0.68, 0.76, 48]} /><meshBasicMaterial color="#548ad2" transparent opacity={0.15} side={THREE.DoubleSide} /></mesh>
         </group>
         <group ref={dogRef} visible={false} scale={0.001}>
           <GoddardRobot />
