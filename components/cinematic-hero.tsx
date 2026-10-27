@@ -393,11 +393,11 @@ function PhoneScene() {
         renderPortal(0, time, 1.84, 1.94, 2.75);
         renderPortal(1, time, 4.42, 4.52, 5.35);
         renderPortal(2, time, 7.02, 7.12, 7.95);
-        renderPortal(3, time, 9.35, 9.42);
+        renderPortal(3, time, mobile ? 9.47 : 9.35, mobile ? 9.54 : 9.42);
         const quantumProgress = ease(clamp((time - 1.32) / 0.6)) * (1 - ease(clamp((time - 3.06) / 0.6)));
         const menoviqProgress = ease(clamp((time - 3.9) / 0.6)) * (1 - ease(clamp((time - 5.66) / 0.6)));
         const noriProgress = ease(clamp((time - 6.5) / 0.6)) * (1 - ease(clamp((time - 8.26) / 0.6)));
-        const goddardProgress = ease(clamp((time - 9.1) / 0.65));
+        const goddardProgress = ease(clamp((time - (mobile ? 9.22 : 9.1)) / 0.65));
         // As the camera leaves the phone, let the surrounding interfaces fade
         // into the studio so the fourth reveal belongs to the dog.
         const deviceFade = ease(clamp((goddardProgress - 0.15) / 0.7));
@@ -414,9 +414,13 @@ function PhoneScene() {
         }
         previousDeviceFade = deviceFade;
         if (mobileShortcuts && mobile) mobileShortcuts.style.visibility = time > 0.76 && goddardProgress < 0.15 ? "visible" : "hidden";
-        // The dog emerges through the screen as the project panels open.
-        // Retreat into the phone during a zoom, then reappear on the pullback.
-        const entrance = reducedMotion ? Number(time >= 1.02) : ease(clamp((time - 0.8) / 0.36));
+        // On mobile, save Goddard's entrance for the final return from Nori.
+        // Let the phone settle before the dog emerges and the camera follows.
+        const entranceStart = mobile ? 8.86 : 0.8;
+        const entranceDuration = mobile ? 0.28 : 0.36;
+        const entrance = reducedMotion
+          ? Number(time >= (mobile ? 9.14 : 1.02))
+          : ease(clamp((time - entranceStart) / entranceDuration));
         const focus = Math.max(quantumProgress, menoviqProgress, noriProgress);
         const emergence = entrance * (1 - ease(clamp(focus / 0.35)));
         const dog = dogRef.current;
