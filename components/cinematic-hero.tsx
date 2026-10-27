@@ -23,9 +23,9 @@ const featurePanels: { id: ScreenFeature; label: string; position: [number, numb
   { id: "calendar", label: "Health calendar", position: [-2.55, -1.9, 1.5] },
 ];
 
-function makeScreenTexture(feature?: ScreenFeature) {
+function makeScreenTexture(feature?: ScreenFeature, compact = false) {
   const canvas = document.createElement("canvas");
-  const resolutionScale = feature ? 2 : 3;
+  const resolutionScale = feature ? (compact ? 1 : 2) : (compact ? 2 : 3);
   const logicalWidth = feature ? 1200 : 600;
   const logicalHeight = feature ? logicalWidth / screenAspects[feature] : logicalWidth / noriScreens.aspect;
   canvas.width = logicalWidth * resolutionScale;
@@ -36,7 +36,7 @@ function makeScreenTexture(feature?: ScreenFeature) {
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
-  texture.anisotropy = 8;
+  texture.anisotropy = compact ? 4 : 8;
   texture.magFilter = THREE.LinearFilter;
   texture.minFilter = THREE.LinearMipmapLinearFilter;
 
@@ -143,16 +143,16 @@ function PhoneFrame({ materialRef }: { materialRef: React.RefObject<THREE.MeshPh
   );
 }
 
-function MainDisplay({ displayRef }: { displayRef: React.RefObject<THREE.Group | null> }) {
+function MainDisplay({ displayRef, compact }: { displayRef: React.RefObject<THREE.Group | null>; compact: boolean }) {
   const materialRef = useRef<THREE.MeshBasicMaterial>(null);
 
   useEffect(() => {
-    const texture = makeScreenTexture();
+    const texture = makeScreenTexture(undefined, compact);
     if (!texture || !materialRef.current) return;
     materialRef.current.map = texture;
     materialRef.current.needsUpdate = true;
     return () => texture.dispose();
-  }, []);
+  }, [compact]);
 
   return (
     <group ref={displayRef} position={[0, 0, 0.178]}>
@@ -173,7 +173,9 @@ function FeaturePanel({
   materialsRef,
   index,
   feature,
+  compact,
 }: {
+  compact: boolean;
   panelRef: (node: THREE.Group | null) => void;
   materialsRef: React.RefObject<(THREE.MeshBasicMaterial | null)[]>;
   index: number;
@@ -182,12 +184,12 @@ function FeaturePanel({
   const screenRef = useRef<THREE.MeshBasicMaterial>(null);
 
   useEffect(() => {
-    const texture = makeScreenTexture(feature.id);
+    const texture = makeScreenTexture(feature.id, compact);
     if (!texture || !screenRef.current) return;
     screenRef.current.map = texture;
     screenRef.current.needsUpdate = true;
     return () => texture.dispose();
-  }, [feature.id]);
+  }, [feature.id, compact]);
 
   return (
     <group ref={panelRef} position={[0, 0, 0.22]} scale={0.01}>
@@ -211,7 +213,8 @@ function FeaturePanel({
 }
 
 function PhoneScene() {
-  const { camera, size } = useThree();
+  const { camera, size, gl, scene, setDpr, invalidate } = useThree();
+  const compact = size.width <= 640;
   const perspectiveCamera = camera as THREE.PerspectiveCamera;
   const phoneRef = useRef<THREE.Group>(null);
   const displayRef = useRef<THREE.Group>(null);
@@ -222,7 +225,28 @@ function PhoneScene() {
   const panelRefs = useRef<(THREE.Group | null)[]>([]);
   const panelMaterialRefs = useRef<(THREE.MeshBasicMaterial | null)[]>([]);
   const isScrubbing = useRef(false);
+  const renderJourneyRef = useRef<(() => void) | null>(null);
   const phoneBaseY = size.width < 980 ? -1.4 : 0;
+
+  useEffect(() => {
+    // Keep the phone sharp without rendering a desktop-sized shadow pass and
+    // high-DPI framebuffer on a small touch screen.
+    setDpr(Math.min(window.devicePixelRatio || 1, compact ? 1.25 : 1.75));
+    gl.shadowMap.enabled = !compact;
+    gl.shadowMap.needsUpdate = true;
+    let cancelled = false;
+    const warmShaders = () => {
+      if (!cancelled) void gl.compileAsync(scene, camera).catch(() => undefined);
+    };
+    const idle = typeof window.requestIdleCallback === "function"
+      ? window.requestIdleCallback(warmShaders, { timeout: 1200 }) : undefined;
+    const timer = idle === undefined ? window.setTimeout(warmShaders, 250) : undefined;
+    return () => {
+      cancelled = true;
+      if (idle !== undefined) window.cancelIdleCallback(idle);
+      if (timer !== undefined) window.clearTimeout(timer);
+    };
+  }, [camera, compact, gl, scene, setDpr]);
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
@@ -234,17 +258,26 @@ function PhoneScene() {
     const dashboard = panelRefs.current[1];
     const menoviq = panelRefs.current[0];
     if (!dashboard || !menoviq) return;
+    const mobile = compact;
+    ScrollTrigger.config({ ignoreMobileResize: true });
     const deviceParts = [hardwareRef.current, ...panelRefs.current].filter((part): part is THREE.Group => Boolean(part));
     const deviceMaterials = new Map<THREE.Material, { opacity: number; transparent: boolean }>();
     deviceParts.forEach((part) => part.traverse((object) => {
       if (!(object instanceof THREE.Mesh)) return;
       const materials = Array.isArray(object.material) ? object.material : [object.material];
       materials.forEach((material: THREE.Material) => {
-        if (!deviceMaterials.has(material)) deviceMaterials.set(material, { opacity: material.opacity, transparent: material.transparent });
+        if (!deviceMaterials.has(material)) {
+          deviceMaterials.set(material, { opacity: material.opacity, transparent: material.transparent });
+          // Compile one mobile material variant up front, rather than switching
+          // shader programs midway through the final fade.
+          if (mobile && !material.transparent) {
+            material.transparent = true;
+            material.needsUpdate = true;
+          }
+        }
       });
     }));
     let previousDeviceFade = 0;
-    const mobile = size.width <= 640;
     // Frame a portrait phone against the viewport, rather than using desktop distance.
     const assemblyDistance = mobile ? 7.4 : 10.1;
     const cameraStart = new THREE.Vector3(0, 0, assemblyDistance);
@@ -309,21 +342,25 @@ function PhoneScene() {
     };
 
     const clamp = (value: number) => THREE.MathUtils.clamp(value, 0, 1);
-    const ease = gsap.parseEase("power2.inOut");
+    const ease = gsap.parseEase(mobile ? "sine.inOut" : "power2.inOut");
     const portalElements = ["quantummed", "menoviq", "nori", "goddard"].map((project) =>
       journey.querySelector<HTMLElement>(`.dashboard-portal-${project}`),
     );
     const mobileShortcuts = journey.querySelector<HTMLElement>(".mobile-project-screens");
     const initialStyles = [...portalElements, mobileShortcuts].filter((element): element is HTMLElement => Boolean(element))
       .map((element) => ({ element, cssText: element.style.cssText }));
+    const portalOpacities = portalElements.map(() => -1);
     const renderPortal = (index: number, time: number, entry: number, morphEntry: number, exit = Infinity) => {
       const overlay = portalElements[index];
       if (!overlay) return;
-      const opacity = clamp((time - entry) / 0.1) * (1 - clamp((time - exit - 0.29) / 0.1));
-      const arrival = ease(clamp((time - morphEntry) / 0.28));
+      const opacity = ease(clamp((time - entry) / (mobile ? 0.16 : 0.1))) * (1 - ease(clamp((time - exit - 0.29) / (mobile ? 0.16 : 0.1))));
+      // Hidden projects do not need layout variables rewritten on every frame.
+      if (opacity === 0 && portalOpacities[index] === 0) return;
+      portalOpacities[index] = opacity;
+      const arrival = ease(clamp((time - morphEntry) / (mobile ? 0.36 : 0.28)));
       const departure = ease(clamp((time - exit) / 0.28));
       const morph = reducedMotion ? 1 : arrival * (1 - departure);
-      const reveal = clamp((time - morphEntry - 0.14) / 0.18) * (1 - clamp((time - exit) / 0.12));
+      const reveal = ease(clamp((time - morphEntry - 0.14) / (mobile ? 0.22 : 0.18))) * (1 - ease(clamp((time - exit) / 0.12)));
       overlay.style.opacity = String(opacity);
       overlay.style.visibility = opacity > 0 ? "visible" : "hidden";
       overlay.style.pointerEvents = opacity === 1 && reveal > 0.95 ? "auto" : "none";
@@ -333,68 +370,14 @@ function PhoneScene() {
 
     const context = gsap.context(() => {
       const timeline = gsap.timeline({
-        // Derive each shot from absolute timeline time so forward, backward,
-        // and large scroll jumps always resolve to exactly the same composition.
-        onUpdate: () => {
-          const time = timeline.time();
-          renderPortal(0, time, 1.84, 1.94, 2.75);
-          renderPortal(1, time, 4.42, 4.52, 5.35);
-          renderPortal(2, time, 7.02, 7.12, 7.95);
-          renderPortal(3, time, 9.35, 9.42);
-          const quantumProgress = ease(clamp((time - 1.32) / 0.6)) * (1 - ease(clamp((time - 3.06) / 0.6)));
-          const menoviqProgress = ease(clamp((time - 3.9) / 0.6)) * (1 - ease(clamp((time - 5.66) / 0.6)));
-          const noriProgress = ease(clamp((time - 6.5) / 0.6)) * (1 - ease(clamp((time - 8.26) / 0.6)));
-          const goddardProgress = ease(clamp((time - 9.1) / 0.65));
-          // As the camera leaves the phone, let the surrounding interfaces fade
-          // into the studio so the fourth reveal belongs to the dog.
-          const deviceFade = ease(clamp((goddardProgress - 0.15) / 0.7));
-          if (deviceFade > 0 || previousDeviceFade > 0) {
-            deviceParts.forEach((part) => { part.visible = deviceFade < 0.999; });
-            deviceMaterials.forEach((original, material) => {
-              material.opacity = 1 - deviceFade;
-              const transparent = deviceFade > 0 || original.transparent;
-              if (material.transparent !== transparent) {
-                material.transparent = transparent;
-                material.needsUpdate = true;
-              }
-            });
-          }
-          previousDeviceFade = deviceFade;
-          if (mobileShortcuts && mobile) mobileShortcuts.style.visibility = time > 0.76 && goddardProgress < 0.15 ? "visible" : "hidden";
-          // The dog emerges through the screen as the project panels open.
-          // Retreat into the phone during a zoom, then reappear on the pullback.
-          const entrance = reducedMotion ? Number(time >= 1.02) : ease(clamp((time - 0.8) / 0.36));
-          const focus = Math.max(quantumProgress, menoviqProgress, noriProgress);
-          const emergence = entrance * (1 - ease(clamp(focus / 0.35)));
-          const dog = dogRef.current;
-          if (dog) {
-            dog.visible = emergence > 0.005;
-            dog.scale.setScalar((mobile ? 0.8 : 0.78) * emergence);
-            // Clear the device silhouette: beside it on desktop, below on mobile.
-            dog.position.set(
-              THREE.MathUtils.lerp(0.45, mobile ? 0.15 : 3.5, emergence),
-              THREE.MathUtils.lerp(-0.72, mobile ? -4.25 : -1.95, emergence),
-              THREE.MathUtils.lerp(-0.3, 0.85, emergence),
-            );
-            dog.rotation.set(THREE.MathUtils.lerp(-0.35, 0.08, emergence), -0.35, -0.05);
-          }
-          const dogPortal = dogPortalRef.current;
-          if (dogPortal) {
-            dogPortal.visible = emergence > 0.005 && entrance < 0.99;
-            dogPortal.scale.setScalar(emergence);
-          }
-          if (time >= 1.18) {
-            updateProjectCamera(quantumProgress, menoviqProgress, noriProgress);
-            updateDogCamera(goddardProgress);
-          } else {
-            perspectiveCamera.quaternion.identity();
-          }
-        },
+        defaults: { ease: mobile ? "sine.inOut" : "power1.out" },
+        // Demand rendering sleeps while visitors read; scrolling requests frames.
+        onUpdate: () => invalidate(),
         scrollTrigger: {
           trigger: journey,
           start: "top top",
           end: "bottom bottom",
-          scrub: 1,
+          scrub: mobile ? 0.6 : 1,
           invalidateOnRefresh: true,
           onUpdate: (self) => {
             // Keep the endpoint still; reversing the scroll retraces the same shot.
@@ -402,6 +385,65 @@ function PhoneScene() {
           },
         },
       });
+
+      let previousTime = -1;
+      renderJourneyRef.current = () => {
+        const time = timeline.time();
+        if (time === previousTime) return;
+        previousTime = time;
+        renderPortal(0, time, 1.84, 1.94, 2.75);
+        renderPortal(1, time, 4.42, 4.52, 5.35);
+        renderPortal(2, time, 7.02, 7.12, 7.95);
+        renderPortal(3, time, 9.35, 9.42);
+        const quantumProgress = ease(clamp((time - 1.32) / 0.6)) * (1 - ease(clamp((time - 3.06) / 0.6)));
+        const menoviqProgress = ease(clamp((time - 3.9) / 0.6)) * (1 - ease(clamp((time - 5.66) / 0.6)));
+        const noriProgress = ease(clamp((time - 6.5) / 0.6)) * (1 - ease(clamp((time - 8.26) / 0.6)));
+        const goddardProgress = ease(clamp((time - 9.1) / 0.65));
+        // As the camera leaves the phone, let the surrounding interfaces fade
+        // into the studio so the fourth reveal belongs to the dog.
+        const deviceFade = ease(clamp((goddardProgress - 0.15) / 0.7));
+        if (deviceFade > 0 || previousDeviceFade > 0) {
+          deviceParts.forEach((part) => { part.visible = deviceFade < 0.999; });
+          deviceMaterials.forEach((original, material) => {
+            material.opacity = 1 - deviceFade;
+            const transparent = mobile || deviceFade > 0 || original.transparent;
+            if (material.transparent !== transparent) {
+              material.transparent = transparent;
+              material.needsUpdate = true;
+            }
+          });
+        }
+        previousDeviceFade = deviceFade;
+        if (mobileShortcuts && mobile) mobileShortcuts.style.visibility = time > 0.76 && goddardProgress < 0.15 ? "visible" : "hidden";
+        // The dog emerges through the screen as the project panels open.
+        // Retreat into the phone during a zoom, then reappear on the pullback.
+        const entrance = reducedMotion ? Number(time >= 1.02) : ease(clamp((time - 0.8) / 0.36));
+        const focus = Math.max(quantumProgress, menoviqProgress, noriProgress);
+        const emergence = entrance * (1 - ease(clamp(focus / 0.35)));
+        const dog = dogRef.current;
+        if (dog) {
+          dog.visible = emergence > 0.005;
+          dog.scale.setScalar((mobile ? 0.8 : 0.78) * emergence);
+          // Clear the device silhouette: beside it on desktop, below on mobile.
+          dog.position.set(
+            THREE.MathUtils.lerp(0.45, mobile ? 0.15 : 3.5, emergence),
+            THREE.MathUtils.lerp(-0.72, mobile ? -4.25 : -1.95, emergence),
+            THREE.MathUtils.lerp(-0.3, 0.85, emergence),
+          );
+          dog.rotation.set(THREE.MathUtils.lerp(-0.35, 0.08, emergence), -0.35, -0.05);
+        }
+        const dogPortal = dogPortalRef.current;
+        if (dogPortal) {
+          dogPortal.visible = emergence > 0.005 && entrance < 0.99;
+          dogPortal.scale.setScalar(emergence);
+        }
+        if (time >= 1.18) {
+          updateProjectCamera(quantumProgress, menoviqProgress, noriProgress);
+          updateDogCamera(goddardProgress);
+        } else {
+          perspectiveCamera.quaternion.identity();
+        }
+      };
 
       if (mobile) {
         // Start with the full-screen phone and a complete turn, then pull back
@@ -412,7 +454,7 @@ function PhoneScene() {
           .to(phone.rotation, { x: 0, y: 0, z: 0, duration: 0.2 }, 0.03)
           .to(phone.scale, { x: 0.9, y: 0.9, z: 0.9, duration: 0.22 }, 0.03)
           .to(perspectiveCamera.position, { z: 8, duration: 0.22 }, 0.03)
-          .to(phone.rotation, { y: reducedMotion ? 0 : Math.PI * 2, duration: 0.34, ease: "none" }, 0.24)
+          .to(phone.rotation, { y: reducedMotion ? 0 : Math.PI * 2, duration: 0.34, ease: "sine.inOut" }, 0.24)
           .to(display.position, { z: 0.55, duration: 0.25 }, 0.57)
           .to(phone.position, { x: 0, y: 0.65, duration: 0.4 }, 0.65)
           .to(phone.rotation, { x: 0.03, y: (reducedMotion ? 0 : Math.PI * 2) + 0.08, z: -0.025, duration: 0.4 }, 0.65)
@@ -460,6 +502,7 @@ function PhoneScene() {
     }, journey);
 
     return () => {
+      renderJourneyRef.current = null;
       context.revert();
       deviceParts.forEach((part) => { part.visible = true; });
       deviceMaterials.forEach((original, material) => {
@@ -472,13 +515,15 @@ function PhoneScene() {
       initialStyles.forEach(({ element, cssText }) => { element.style.cssText = cssText; });
       perspectiveCamera.quaternion.identity();
     };
-  }, [perspectiveCamera, size.width, size.height]);
+  }, [compact, invalidate, perspectiveCamera, size.width, size.height]);
 
   useFrame((state, delta) => {
+    renderJourneyRef.current?.();
     if (!phoneRef.current || isScrubbing.current) return;
     phoneRef.current.rotation.y += delta * 0.035;
     phoneRef.current.position.y = phoneBaseY + Math.sin(state.clock.elapsedTime * 0.55) * 0.035;
     phoneRef.current.rotation.x = THREE.MathUtils.lerp(phoneRef.current.rotation.x, -0.05 + state.pointer.y * 0.025, 0.025);
+    invalidate();
   });
 
   return (
@@ -502,7 +547,7 @@ function PhoneScene() {
       >
         <group ref={hardwareRef}>
           <PhoneFrame materialRef={frameMaterialRef} />
-          <MainDisplay displayRef={displayRef} />
+          <MainDisplay displayRef={displayRef} compact={compact} />
         </group>
         <group ref={dogPortalRef} position={[0.35, -0.72, 0.58]} visible={false}>
           <mesh><torusGeometry args={[0.65, 0.018, 8, 48]} /><meshBasicMaterial color="#9bc6ff" transparent opacity={0.65} /></mesh>
@@ -515,6 +560,7 @@ function PhoneScene() {
           <FeaturePanel
             key={feature.id}
             feature={feature}
+            compact={compact}
             index={index}
             materialsRef={panelMaterialRefs}
             panelRef={(node) => {
@@ -533,6 +579,8 @@ export function CinematicHero() {
       <Canvas
         camera={{ position: [0, 0, 10.8], fov: 34 }}
         dpr={[1, 1.75]}
+        frameloop="demand"
+        resize={{ scroll: false, debounce: { resize: 150, scroll: 0 } }}
         shadows
         gl={{ antialias: true, powerPreference: "high-performance", alpha: false }}
       >

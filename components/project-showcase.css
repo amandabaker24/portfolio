@@ -173,3 +173,12 @@
   .showcase-cta .arrow-icon { width: 23px; height: 23px; }
   .showcase-navigation a { min-height: 44px; }
 }
+
+@media (max-width: 640px) {
+  /* Keep the mobile handoff inexpensive while its screen bounds are changing. */
+  .showcase-embedded .product-window { box-shadow: 0 12px 30px #0005; }
+  .showcase-embedded .product-window::after { display: none; }
+  .showcase-embedded .product-tilt { transition: none; }
+  .showcase-embedded .showcase-ambient { inset: 0; }
+  .showcase-embedded .showcase-floor { display: none; }
+}
